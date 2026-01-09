@@ -9,15 +9,15 @@
   {
     "objectID": "aboutme.html",
     "href": "aboutme.html",
-    "title": "About me",
+    "title": "About Me",
     "section": "",
-    "text": "Add some text and a figure describing myself.\nFor details, see the instructions."
+    "text": "My name is Anissa Waller Del Valle.\nBackground and Training\nI am Ph.D. student in the Department of Cellular Biology and member of the Center for Tropical and Emerging Global Diseases (CTEGD) here at the University of Georgia. I obtained a B.Sc. in Biological Sciences from Clemson University and was a member of the Eukaryotic Pathogens Innovation Center (EPIC).\nResearch Interests\nI am interested in parasitology, drug discovery, and molecular and cellular biology.\nMy research aims to evaluate and optimize current therapeutics for Naegleria fowleri, a pathogenic free-living amoeba that causes primary amoebic meningoencephalitis (PAM). PAM is a rare but rapidly progressing central nervous system infection associated with a fatality rate exceeding 97% and a median time from symptom onset to death of 5 days. Treatment of PAM currently depends on a multidrug regimen comprising up to 7 antimicrobial, antifungal, and antiparasitic agents, largely empirically selected based on their use against other infections rather than on systematic evidence demonstrating efficacy against N. fowleri infection in vitro or in vivo. Ultimately, I hope that this work can inform more effective treatment strategies for patients facing this disease.\nExperience\nI have some experience with R, particularly in assessing dose-response data and drug-drug interactions. So far, I have only worked on analyzing the effects of two-drug combinations and am hoping to learn how to analyze and model complex datasets more rigorously so I can better evaluate the drugs in the current PAM treatment regimen and identify combinations with the greatest potential to improve patient outcomes.\nI have been using SynergyFinder Plus.\nOther\nI am a big Star Wars fan – so much so that my cat’s name is Padme Catmidala (Waller Del Valle)."
   },
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "My website and data analysis portfolio",
+    "title": "Anissa Waller Del Valle’s Portfolio",
     "section": "",
-    "text": "Feel free to change the text below any way you want 😁!\n\nHello\n\nAnd hello again\nWelcome to my website and data analysis portfolio.\n\nPlease use the Menu Bar above to look around.\nHave fun!"
+    "text": "Welcome to my portfolio 🐱 !"
   }
 ]

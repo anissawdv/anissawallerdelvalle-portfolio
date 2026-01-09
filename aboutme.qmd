@@ -1,7 +1,28 @@
 ---
-title: "About me"
+title: "About Me"
 ---
 
-Add some text and a figure describing myself.
+My name is Anissa Waller Del Valle.
 
-For details, see the instructions. 
+**Background and Training**
+
+I am Ph.D. student in the Department of Cellular Biology and member of the Center for Tropical and Emerging Global Diseases (CTEGD) here at the University of Georgia. I obtained a B.Sc. in Biological Sciences from Clemson University and was a member of the Eukaryotic Pathogens Innovation Center (EPIC).
+
+**Research Interests**
+
+I am interested in parasitology, drug discovery, and molecular and cellular biology.
+
+My research aims to evaluate and optimize current therapeutics for *Naegleria fowleri*, a pathogenic free-living amoeba that causes primary amoebic meningoencephalitis (PAM). PAM is a rare but rapidly progressing central nervous system infection associated with a fatality rate exceeding 97% and a median time from symptom onset to death of 5 days. Treatment of PAM currently depends on a multidrug regimen comprising up to 7 antimicrobial, antifungal, and antiparasitic agents, largely empirically selected based on their use against other infections rather than on systematic evidence demonstrating efficacy against *N. fowleri* infection in vitro or in vivo. Ultimately, I hope that this work can inform more effective treatment strategies for patients facing this disease.
+
+**Experience**
+
+I have some experience with R, particularly in assessing dose-response data and drug-drug interactions. So far, I have only worked on analyzing the effects of two-drug combinations and am hoping to learn how to analyze and model complex datasets more rigorously so I can better evaluate the drugs in the current PAM treatment regimen and identify combinations with the greatest potential to improve patient outcomes.
+
+I have been using <a href="https://bioconductor.org/packages/release/bioc/vignettes/synergyfinder/inst/doc/User_tutorual_of_the_SynergyFinder_plus.html#higher-order-drug-combination-screening">SynergyFinder Plus</a>.
+
+**Other**
+
+I am a *big* Star Wars fan -- so much so that my cat's name is Padme Catmidala (Waller Del Valle).
+
+![](images/Padme.png) ![](images/CTEGD_Headshot_Closeup.jpg){width="256"}
+
