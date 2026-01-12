@@ -2,11 +2,9 @@
 title: "About Me"
 ---
 
-My name is Anissa Waller Del Valle.
-
 **Background and Training**
 
-I am Ph.D. student in the Department of Cellular Biology and member of the Center for Tropical and Emerging Global Diseases (CTEGD) here at the University of Georgia. I obtained a B.Sc. in Biological Sciences from Clemson University and was a member of the Eukaryotic Pathogens Innovation Center (EPIC).
+My name is Anissa Waller Del Valle. I am Ph.D. student in the Department of Cellular Biology and member of the Center for Tropical and Emerging Global Diseases (CTEGD) here at the University of Georgia. I obtained a B.Sc. in Biological Sciences from Clemson University and was a member of the Eukaryotic Pathogens Innovation Center (EPIC).
 
 **Research Interests**
 
@@ -18,11 +16,11 @@ My research aims to evaluate and optimize current therapeutics for *Naegleria fo
 
 I have some experience with R, particularly in assessing dose-response data and drug-drug interactions. So far, I have only worked on analyzing the effects of two-drug combinations and am hoping to learn how to analyze and model complex datasets more rigorously so I can better evaluate the drugs in the current PAM treatment regimen and identify combinations with the greatest potential to improve patient outcomes.
 
-I have been using <a href="https://bioconductor.org/packages/release/bioc/vignettes/synergyfinder/inst/doc/User_tutorual_of_the_SynergyFinder_plus.html#higher-order-drug-combination-screening">SynergyFinder Plus</a>.
+For this exercise, I would like to share <a href="https://bioconductor.org/packages/release/bioc/vignettes/synergyfinder/inst/doc/User_tutorual_of_the_SynergyFinder_plus.html#higher-order-drug-combination-screening">SynergyFinder Plus</a>, a tool desgined to analyzed drug combination dose-response matrix data. 
 
 **Other**
 
 I am a *big* Star Wars fan -- so much so that my cat's name is Padme Catmidala (Waller Del Valle).
 
-![](images/Padme.png) ![](images/CTEGD_Headshot_Closeup.jpg){width="256"}
+![](images/CTEGD_Headshot_Closeup.jpg)
 
