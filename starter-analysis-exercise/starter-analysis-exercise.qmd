@@ -1,5 +1,226 @@
 ---
-title: "Future Exercise"
+title: "Data Analysis Assessment"
 ---
 
-Placeholder file for a future exercise.
+Load the needed packages. For this assignment, I used the dslabs package, the tidyverse package, and the ggplot2 package.
+
+```         
+library("dslabs") 
+library("tidyverse")
+library("ggplot2")
+```
+
+Running the next command in the R console to seek information/assistance on gapminder.
+
+```         
+help(gapminder)
+```
+
+The str command in R is short for structure. Running this command enables users to display the internal structure of an R object. I will run this command to display the structure of the gapminder dataset.
+
+```         
+str(gapminder)
+```
+
+The summary command in R produces summary statistics for a given dataset or vector. I will obtain a summary of the data.
+
+```         
+summary(gapminder)
+```
+
+The class() function in R determines the class (i.e., data type or structure) of an object. I will determine the type of object gapminder is.
+
+```         
+class(gapminder)
+```
+
+I will write code that assigns only the african countries to a new object called africadata.
+
+```         
+africadata <- gapminder %>% 
++ filter(continent == "Africa")
+```
+
+-   \<- is an assignment operator. It will assign the filtered data to a new object, which I have named africadata.
+
+-   gapminder is the dataset being used. %\>% is a pipe operator. It will take the output of one function and use it as the input to the next function.
+
+-   filter() is a function that selects a subset of rows from a dataset that met specific conditions. It is part of the tidyverse collection.
+
+-   continent == "Africa" is the condition being used inside filter(). It will keep rows where the continent coloumn is equal to "Africa". Africa must be in quotes because it is a text string.
+
+I will check the new data set using the str and summary functions.
+
+```         
+str(africadata) 
+summary(africadata)
+```
+
+I confirmed there are now 2,907 observations. Now, I will take the africadata object and create two new objects. One object will contain infant_mortality and life_expectancy data. The other will contain population and life_expectancy. I should have two objects with 2,907 observations and two variables.
+
+I will generate an object with only infant_mortality and life_expectancy
+
+```         
+africa_infantmort_lifeexp <- africadata %>% 
++ select(infant_mortality, life_expectancy)
+
+str(africa_infantmort_lifeexp) 
+summary(africa_infantmort_lifeexp)
+```
+
+-   africa_infantmort_lifeexp will be the new object with only infant_mortality and life_expectancy.
+
+-   \<- is an assignment operator and will assign the filtered data to the new object, africa_infantmort_lifeexp.
+
+-   africadata is the dataset being used.
+
+-   select() is a function that will grab a specific coloumn(s) from a dataset, enabling users to create a new dataset that contains only the columns selected.
+
+I have confirmed that the above dataset, africa_infantmort_lifeexp, has 2,907 observations of 2 variables. I will now repeat the process described above to generate the second object with population and life_expectancy
+
+```         
+africa_pop_lifeexp <- africadata %>% 
++ select(population, life_expectancy)
+
+str(africa_pop_lifeexp) 
+summary(africa_pop_lifeexp)
+```
+
+I have confirmed that the above dataset, africa_pop_lifeexp, has 2,907 observations of 2 variables.
+
+I will now plot life expectancy as a function of infant mortality. I expect to see a negative correlation between infant mortality and life expectancy.
+
+```         
+ggplot(africa_infantmort_lifeexp, aes(x = infant_mortality, y = life_expectancy)) + 
++ geom_point() + 
++ labs( + title = "Life Expectancy vs Infant Mortality in Africa", 
++ x = "Infant Mortality", 
++ y = "Life Expectancy" + 
+)
+```
+
+-   ggplot() is a function used to initialize a plot object. components must be added using the + operator.
+
+-   africa_infantmort_lifeexp is the dataset I want to plot.
+
+-   aes() is a function that links data variables to aesthetics, like the x and y position on a graph.
+
+-   geom_point() is a function used to add individual points to a plot.
+
+-   labs() is a function used to modify various labels of a plot.
+
+![](Life Expectancy vs. Infant Mortality in Africa.png)
+
+226 rows containing missing values or values outside of the scale range were removed.
+
+I have plotted life expectancy as a function of infant mortality. I saw a negative correlation between infant mortality and life expectancy.
+
+I will now plot life expectancy as a function of population size. in this plot, the x-axis will be set to log scale.
+
+```         
+ggplot(africa_pop_lifeexp, aes(x = population, y = life_expectancy)) 
++ geom_point() 
++ scale_x_log10() 
++ labs( title = "Life Expectancy vs Population in Africa", x = "Population (log scale)", y = "Life Expectancy" )
+```
+
+-   scale_x_log10() is a function that transforms the x-axis of a plot to a base-10 logarithmic scale.
+
+![](Life Expectancy vs. Population in Africa.png)
+
+51 rows containing missing values or values outside of the scale range were removed.
+
+I have plotted life expectancy as a function of population size. I saw a positive correlation between population size and life expectancy.
+
+In both plots, there are 'streaks' of data. I believe that this due to the fact that I am looking at data for each individual country in africa over several decades (1960 - 2016).
+
+As mentioned previously, 226 rows containing missing values or values outside of the scale range were removed from the first plot looking at life expectancy as a function of infant mortality. I will now figure out which years have missing data for infant mortality.
+
+```         
+africadata %>% 
++ group_by(year) %>% 
++ summarise(missing_infant = sum(is.na(infant_mortality))) %>% 
++ arrange(year)
+```
+
+-   africadata is the dataset that will be used.
+
+-   group_by() is a function that organizes data into groups. I will group the data by year.
+
+-   summarise() is a function that summarizes a dataset into a single value.
+
+-   is.na() is a function that identifies missing values in an object. Here, the object is infant_mortality.
+
+-   sum() is a function that adds the number of true values. This will count the number of countries in africa that are missing infant data mortality for each year.
+
+-   missing_infant is the name given to the column that will store the counts obtained from the sum(...) function.
+
+I currently only see the first 10 rows. To see the rest, I will first make missing_infant an object, and then print all rows.
+
+```         
+missing_by_year <- africadata %>% 
++ group_by(year) %>% 
++ summarise(missing_infant = sum(is.na(infant_mortality))) %>% 
++ arrange(year)
+```
+
+I can see that all countries in Africa reported infant mortality between the years 1982 - 2015. I will now take a look at data from the year 2000 only. I expect to end up with 51 observations and 9 variables.
+
+```         
+africa_yr2000 <- africadata %>% 
++ filter(year == 2000)
+
+str(africa_yr2000) 
+summary(africa_yr2000)
+```
+
+I can see 51 observations of 9 variables. I will now make the same plots as above again, this time for the year 2000. I expect to see a negative correlation between infant mortality and life expectancy.
+
+```         
+ggplot(africa_yr2000, aes(x = infant_mortality, y = life_expectancy)) + 
++ geom_point() + 
++ labs( + title = "Life Expectancy vs Infant Mortality in Africa (2000)", 
++ x = "Infant Mortality", 
++ y = "Life Expectancy" + 
+)
+```
+
+![](Life Expectancy vs. Infant Mortality in Africa (2000).png)
+
+I will now make the same plots as above again, this time for the year 2000. I expect to see no noticeable correlation between population size and life expectancy.
+
+```         
+ggplot(africa_yr2000, aes(x = population, y = life_expectancy)) + 
++ geom_point() + 
++ scale_x_log10() + 
++ labs( + title = "Life Expectancy vs Population in Africa (2000)", 
++ x = "Population (log scale)", 
++ y = "Life Expectancy" + 
+)
+```
+
+![](Life Expectancy vs. Population in Africa (2000).png)
+
+I will fit a linear model to this data. I will fit life expectancy as the outcome and infant mortality as the predictor. I will save the result into an object and view the results of this model.
+
+-   lm() is a function used to fit linear models.
+
+-   The output is on the left-hand side of \~.
+
+-   The predictor is on the right-hand side of \~.
+
+-   data = africa_yr2000 is the dataset being used. fit1 is the name of the object being created.
+
+```         
+fit1 <- lm(life_expectancy ~ infant_mortality, data = africa_yr2000) summary(fit1)
+```
+
+The y-intercept of the regression line is 71.29331. This is the predicted value of life expectancy when infant mortality = 0. The slope is -0.18916. Life expectancy decreases by 0.18916 years with each infant mortality. The slope is statistically significant (p \< 0.001). In sum, this means there is a strong negative correlation between infant mortality and life expectancy, with high infant mortality predicting low life expectancy.
+
+I will now repeat with population size as the predictor variable and life expectancy as the outcome.
+
+```         
+fit2 <- lm(life_expectancy ~ population, data = africa_yr2000) summary(fit2)
+```
+
+The y-intercept of the regression line is 55.93. This is the predicted value of life expectancy when population = 0. The slope is 2.756e-08. Life expectancy increases by 2.756e-08 years with each additional person. The slope is not statistically significant. Put together, this means that population size is not a predictor of life expectancy in the year 2000 for countries in Africa.
