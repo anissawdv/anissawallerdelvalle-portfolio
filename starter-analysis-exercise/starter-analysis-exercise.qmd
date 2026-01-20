@@ -169,7 +169,6 @@ ggplot(africa_infantmort_lifeexp, aes(x = infant_mortality, y = life_expectancy)
 -   labs() is a function used to modify various labels of a plot.
 
 
-![](Life%20Expectancy%20vs.%20Infant%20Mortality%20in%20Africa.png)
 
 
 226 rows containing missing values or values outside of the scale range were removed.
@@ -196,8 +195,6 @@ ggplot(africa_pop_lifeexp, aes(x = population, y = life_expectancy)) +
 
 -   scale_x_log10() is a function that transforms the x-axis of a plot to a base-10 logarithmic scale.
 
-
-![](Life%20Expectancy%20vs.%20Population%20in%20Africa.png)
 
 
 51 rows containing missing values or values outside of the scale range were removed.
@@ -289,10 +286,6 @@ ggplot(africa_yr2000, aes(x = infant_mortality, y = life_expectancy)) +
 )
 ```
 
-
-![](Life%20Expectancy%20vs.%20Infant%20Mortality%20in%20Africa%20(2000).png)
-
-
 I will now make the same plots as above again, this time for the year 2000. I expect to see no noticeable correlation between population size and life expectancy.
 
 
@@ -307,10 +300,6 @@ ggplot(africa_yr2000, aes(x = population, y = life_expectancy)) +
           y = "Life Expectancy"
 )
 ```
-
-
-![](Life%20Expectancy%20vs.%20Population%20in%20Africa%20(2000).png)
-
 
 I will fit a linear model to this data. I will fit life expectancy as the outcome and infant mortality as the predictor. I will save the result into an object and view the results of this model.
 
