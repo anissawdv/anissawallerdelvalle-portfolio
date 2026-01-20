@@ -72,9 +72,9 @@ class(gapminder)
 *I will write code that assigns only the African countries to a new object called africadata.*
 
 ```{r}
-# assign African countries to new object          
+# assign African countries to new object
 africadata <- gapminder %>% 
-+ filter(continent == "Africa")
+     filter(continent == "Africa")
 ```
 
 -   *\<- is an assignment operator. It will assign the filtered data to a new object, which I have named africadata.*
@@ -404,4 +404,4 @@ fit2 <- lm(life_expectancy ~ population, data = africa_yr2000)
 summary(fit2)
 ```
 
-*The y-intercept of the regression line is 55.93. This is the predicted value of life expectancy when population = 0. The slope is 2.756e-08. Life expectancy increases by 2.756e-08 years with each additional person. The slope is not statistically significant. Put together, this means that population size is not a predictor of life expectancy in the year 2000 for countries in Africa.*
+*The y-intercept of the regression line is 55.93. This is the predicted value of life expectancy when population = 0. The slope is 2.756e-08. Life expectancy increases by 2.756e-08 years with each additional person. The slope is not statistically significant. Put together, this means that population size is not a predictor of life expectancy countries in Africa in the year 2000.*
