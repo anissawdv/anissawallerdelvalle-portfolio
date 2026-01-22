@@ -337,3 +337,104 @@ summary(fit2)
 
 
 The y-intercept of the regression line is 55.93. This is the predicted value of life expectancy when population = 0. The slope is 2.756e-08. Life expectancy increases by 2.756e-08 years with each additional person. The slope is not statistically significant. Put together, this means that population size is not a predictor of life expectancy in the year 2000 for countries in Africa.
+
+```{r}
+# This part was contributed by Aylla von Ermland
+
+# Load libraries
+library("dslabs")
+library("dplyr")
+library("ggplot2")
+library("pheatmap")
+
+# Load dataset
+data("tissue_gene_expression")
+
+x <- tissue_gene_expression$x
+y <- tissue_gene_expression$y
+
+# Check structure
+str(tissue_gene_expression)
+
+dim(x)                         
+
+summary(tissue_gene_expression)
+
+#find what are the tissue types
+table(y)                          
+```
+
+```{r}
+# View the first 10 rows (samples) of the expression matrix to have an idea how the data looks like:
+head(tissue_gene_expression$x, 10)
+```
+
+ After exploring the data, I have found 94500 numbers in matrix = 189 samples × 500 genes. 
+ Next, I decided to perform the classical PCA analysis and plots for gene expression data:
+
+```{r}
+
+pca <- prcomp(x)                  
+pca_data <- data.frame(
+  PC1 = pca$x[,1],
+  PC2 = pca$x[,2],
+  tissue = y
+)
+
+# Plot PC1 vs PC2
+ggplot(pca_data, aes(x = PC1, y = PC2, color = tissue)) +
+  geom_point(size = 1.5) +
+  labs(title = "PCA of gene expression", x = "PC1", y = "PC2") +
+  theme_minimal()
+```
+
+I chose to explore basic tissue-specific expression patterns. Specifically, I addressed whether brain tissues (e.g., cerebellum and hippocampus) share more highly expressed genes with each other than they do with non-brain tissues.
+
+```{r}
+
+# AI Disclosure: I used ChatGPT in this step to review the code for generating the matrix and converting expression matrix (189 samples × 500 genes) into a data frame 'as.data.frame' : 
+
+# For each gene, I computed average expression across all samples within each tissue
+tissue_avg_matrix <- do.call(rbind, lapply(split(as.data.frame(x), y), colMeans))
+
+# Compute correlation matrix between tissues
+cor_matrix <- cor(t(tissue_avg_matrix))  # genes as rows
+
+# Assign tissue names to rows and columns
+tissue_names <- rownames(tissue_avg_matrix)
+rownames(cor_matrix) <- colnames(cor_matrix) <- tissue_names
+
+# Plot correlation heatmap
+pheatmap(cor_matrix,
+         main = "Correlation of average gene expression",
+         clustering_distance_rows = "correlation",
+         clustering_distance_cols = "correlation",
+         display_numbers = TRUE)
+
+```
+
+Last, I tried to stistically test weather brain tissues share a higher number of highly expressed genes compared to other non-brain tissues. 
+
+Question: is the average correlation between brain and non-brain tissues statistically lower than the correlation between the two brain tissues? 
+
+Here I will be testing whether a set of correlations (brain–non-brain) is statistically lower on average than a reference value (brain–brain).
+
+```{r}
+# Do brain tissues exhibit more similar gene expression patterns with each other than they do with non-brain tissues?
+brain_tissues <- c("cerebellum", "hippocampus")
+non_brain_tissues <- setdiff(tissue_names, brain_tissues)
+
+# Correlation between brain tissues
+brain_brain_cor <- cor_matrix["cerebellum", "hippocampus"]
+
+# Correlations between each brain tissue and all non-brain tissues
+brain_non_cor <- c(
+  cor_matrix["cerebellum", non_brain_tissues],
+  cor_matrix["hippocampus", non_brain_tissues]
+)
+
+# One-sample t-test: is brain–non-brain correlation < brain–brain correlation?
+t.test(brain_non_cor, mu = brain_brain_cor, alternative = "less")
+
+```
+
