@@ -169,8 +169,6 @@ ggplot(africa_infantmort_lifeexp, aes(x = infant_mortality, y = life_expectancy)
 -   labs() is a function used to modify various labels of a plot.
 
 
-
-
 226 rows containing missing values or values outside of the scale range were removed.
 
 
