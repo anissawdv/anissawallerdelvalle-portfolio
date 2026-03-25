@@ -363,3 +363,181 @@ cv_results_model2 <- collect_metrics(model2_cv)
 cv_results_model1
 cv_results_model2
 ```
+
+#This section added by Emil Joson
+#Part 2 - Model Predictions
+
+```{r}
+# Create predictions for the null model.
+# The null model predicts the same mean Y value for every subject.
+null_pred <- tibble(
+  Y = train_data$Y,                    # observed outcome
+  .pred = mean_y,                      # same predicted value for all rows
+  model = "Null model"                 # label for the model
+)
+
+# Create predictions for Model 1 (DOSE only).
+model1_pred <- predict(model1, train_data) %>%
+  bind_cols(train_data %>% select(Y)) %>%   # add observed Y values
+  mutate(model = "Model 1: DOSE only")      # label for the model
+
+# Create predictions for Model 2 (all predictors).
+model2_pred <- predict(model2, train_data) %>%
+  bind_cols(train_data %>% select(Y)) %>%   # add observed Y values
+  mutate(model = "Model 2: All predictors") # label for the model
+
+# Combine predictions from all three models into one data frame.
+pred_plot_data <- bind_rows(
+  null_pred,
+  model1_pred,
+  model2_pred
+)
+
+# Inspect the combined data frame.
+glimpse(pred_plot_data)
+
+# Plot observed values against predicted values for all three models.
+ggplot(pred_plot_data, aes(x = Y, y = .pred, color = model)) +
+  geom_point(alpha = 0.7) +  # plot points for each prediction
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed"
+  ) +                        # add 45-degree reference line
+  coord_cartesian(xlim = c(0, 5000), ylim = c(0, 5000)) +  # set both axes to 0-5000
+  labs(
+    title = "Observed vs Predicted Values for Three Models",
+    x = "Observed Y",
+    y = "Predicted Y",
+    color = "Model"
+  ) +
+  theme_minimal()
+```
+
+The null model produces a single horizontal line because it predicts the same mean outcome for every observation. Model 1 produces a few horizontal bands because predictions depend only on dose, which takes only a small number of values. Model 2 appears to perform best, since its predictions are more closely aligned with the 45-degree line, although there is still noticeable scatter. This suggests that the full model captures more of the signal in the data, but still does not explain all variability in the outcome.
+
+
+```{r}
+# Create predictions for Model 2 on the training data
+model2_resid_data <- predict(model2, train_data) %>%
+  bind_cols(train_data %>% select(Y)) %>%   # add observed values
+  mutate(
+    residual = .pred - Y                    # compute residuals (predicted - observed)
+  )
+
+# Find the maximum absolute residual value.
+# This helps us make the y-axis symmetric.
+max_resid <- max(abs(model2_resid_data$residual))
+
+# Plot predicted vs residuals
+ggplot(model2_resid_data, aes(x = .pred, y = residual)) +
+  geom_point(alpha = 0.7) +                 # scatter plot of residuals
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "red"
+  ) +                                       # horizontal line at 0
+  coord_cartesian(
+    ylim = c(-max_resid, max_resid)         # symmetric y-axis
+  ) +
+  labs(
+    title = "Residual Plot for Model 2",
+    x = "Predicted Y",
+    y = "Residuals (Predicted - Observed)"
+  ) +
+  theme_minimal()
+```
+
+The residual plot shows that residuals are not randomly distributed around zero. There appears to be a pattern where larger predicted values are associated with more negative residuals, indicating that the model tends to underpredict higher outcome values. This suggests that the model may be missing important nonlinear relationships or relevant predictors.
+
+#Part 2 - Model Predictions and Uncertainty
+
+```{r}
+# Reset seed for reproducibility
+set.seed(rngseed)
+
+# Create 100 bootstrap samples from the training data
+boot_samples <- bootstraps(train_data, times = 100)
+
+# Look at the bootstrap object
+boot_samples
+
+# Create an empty matrix to store predictions
+# Rows = number of bootstrap samples (100)
+# Columns = number of observations in training data
+pred_bs <- matrix(
+  NA,
+  nrow = 100,
+  ncol = nrow(train_data)
+)
+
+# Loop over each bootstrap sample
+for (i in 1:100) {
+
+  # Extract the i-th bootstrap sample
+  dat_sample <- rsample::analysis(boot_samples$splits[[i]])
+
+  # Fit Model 2 on this bootstrap sample
+  fit_bs <- linear_reg() %>%
+    set_engine("lm") %>%
+    fit(Y ~ DOSE + AGE + SEX + WT + HT, data = dat_sample)
+
+  # Predict on the ORIGINAL training data
+  preds <- predict(fit_bs, train_data) %>%
+    pull(.pred)
+
+  # Store predictions in the matrix
+  pred_bs[i, ] <- preds
+}
+
+# Compute median and 89% confidence intervals for each observation
+preds_summary <- pred_bs |>
+  apply(2, quantile, probs = c(0.055, 0.5, 0.945)) |>
+  t() |>
+  as.data.frame()
+
+# Rename columns for clarity
+colnames(preds_summary) <- c("lower", "median", "upper")
+
+# Add observed values and original predictions
+model2_point_pred <- predict(model2, train_data) %>%
+  pull(.pred)
+
+preds_summary <- preds_summary %>%
+  mutate(
+    Y = train_data$Y,                 # observed values
+    point_pred = model2_point_pred    # original model prediction
+  )
+
+# Inspect
+glimpse(preds_summary)
+
+ggplot(preds_summary, aes(x = Y)) +
+  # Point estimate (original model)
+  geom_point(aes(y = point_pred), color = "black", alpha = 0.7) +
+  # Bootstrap median
+  geom_point(aes(y = median), color = "blue", alpha = 0.6) +
+  # Confidence interval as vertical lines
+  geom_errorbar(
+    aes(ymin = lower, ymax = upper),
+    color = "red",
+    alpha = 0.4
+  ) +
+  # 45-degree reference line
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed"
+  ) +
+  coord_cartesian(xlim = c(0, 5000), ylim = c(0, 5000)) +
+  labs(
+    title = "Model 2 Predictions with Bootstrap Uncertainty",
+    x = "Observed Y",
+    y = "Predicted Y"
+  ) +
+  theme_minimal()
+```
+
+The plot shows the observed values against the predicted values from Model 2, along with bootstrap-derived uncertainty intervals. The black points represent the original model predictions, while the blue points show the bootstrap median predictions. The red error bars indicate the 89% confidence intervals.
+
+We observe that predictions generally follow the diagonal trend but with noticeable scatter, indicating that the model captures some but not all variability in the data. The uncertainty intervals vary in width, suggesting that prediction uncertainty differs across observations. For larger observed values, predictions tend to fall below the 45-degree line, indicating systematic underprediction. This suggests that the model may be missing important nonlinear relationships or relevant predictors.
