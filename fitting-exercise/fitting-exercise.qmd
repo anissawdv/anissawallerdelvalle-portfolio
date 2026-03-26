@@ -364,8 +364,8 @@ cv_results_model1
 cv_results_model2
 ```
 
-#This section added by Emil Joson
-#Part 2 - Model Predictions
+# This section added by Emil Joson
+# Part 2 - Model Predictions
 
 ```{r}
 # Create predictions for the null model.
@@ -450,7 +450,7 @@ ggplot(model2_resid_data, aes(x = .pred, y = residual)) +
 
 The residual plot shows that residuals are not randomly distributed around zero. There appears to be a pattern where larger predicted values are associated with more negative residuals, indicating that the model tends to underpredict higher outcome values. This suggests that the model may be missing important nonlinear relationships or relevant predictors.
 
-#Part 2 - Model Predictions and Uncertainty
+# Part 2 - Model Predictions and Uncertainty
 
 ```{r}
 # Reset seed for reproducibility
@@ -541,3 +541,37 @@ ggplot(preds_summary, aes(x = Y)) +
 The plot shows the observed values against the predicted values from Model 2, along with bootstrap-derived uncertainty intervals. The black points represent the original model predictions, while the blue points show the bootstrap median predictions. The red error bars indicate the 89% confidence intervals.
 
 We observe that predictions generally follow the diagonal trend but with noticeable scatter, indicating that the model captures some but not all variability in the data. The uncertainty intervals vary in width, suggesting that prediction uncertainty differs across observations. For larger observed values, predictions tend to fall below the 45-degree line, indicating systematic underprediction. This suggests that the model may be missing important nonlinear relationships or relevant predictors.
+
+# This section is contributed to by Anissa Waller Del Valle. Module 10, Part 3. 
+
+```{r}
+# Final evaluations using test data
+# Generate predictions for training data (Model 1)
+train_preds <- predict(model1, train_data) %>%
+  bind_cols(train_data %>% select(Y)) %>%
+  mutate(dataset = "Train")
+
+# Generate predictions for test data (Model 2)
+test_preds <- predict(model2, test_data) %>%
+  bind_cols(test_data %>% select(Y)) %>%
+  mutate(dataset = "Test")
+
+# Combine both datasets
+combined_preds <- bind_rows(train_preds, test_preds)
+
+# Plot predicted vs observed for both datasets
+ggplot(combined_preds, aes(x = .pred, y = Y, color = dataset)) +
+  geom_point(alpha = 0.7) +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed"
+  ) +
+  labs(
+    title = "Predicted vs Observed Values (Train vs Test Data)",
+    x = "Predicted Y",
+    y = "Observed Y",
+    color = "Dataset"
+  ) +
+  theme_minimal()
+```
