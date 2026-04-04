@@ -22,8 +22,7 @@ model_data <- readRDS(here("ml-models-exercise", "model_data.rds"))
 
 # Inspect the data 
 glimpse(model_data)
-```
-```{r}
+
 # Recode the RACE variable such that it combines categories 7 and 88. This will be put into a category called 3. 
 
 model_data <- model_data %>%
@@ -91,8 +90,7 @@ lasso_mod <- linear_reg(penalty = 0.1, mixture = 1) %>%
 rf_mod <- rand_forest() %>%
   set_engine("ranger", seed = rngseed) %>%
   set_mode("regression")
-```
-```{r}
+
 # Workflows
 lm_wf <- workflow() %>%
   add_model(lm_mod) %>%
@@ -105,14 +103,12 @@ lasso_wf <- workflow() %>%
 rf_wf <- workflow() %>%
   add_model(rf_mod) %>%
   add_recipe(rec)
-```
-```{r}
+
 # Fit models
 lm_fit <- fit(lm_wf, data = model_data)
 lasso_fit <- fit(lasso_wf, data = model_data)
 rf_fit <- fit(rf_wf, data = model_data)
-```
-```{r}
+
 # Predictions + RMSE
 get_metrics <- function(fit, data) {
   preds <- predict(fit, data) %>%
@@ -130,8 +126,7 @@ rf_res <- get_metrics(rf_fit, model_data)
 lm_res$rmse
 lasso_res$rmse
 rf_res$rmse
-```
-```{r}
+
 # Observed vs predicted plots
 plot_obs_pred <- function(res, title) {
   ggplot(res$preds, aes(x = Y, y = .pred)) +
@@ -169,7 +164,7 @@ lasso_tune_res <- tune_grid(
   resamples = apparent(model_data),
   grid = lasso_grid
 )
-
+# autoplot(lasso_tun_res)
 # autoplot() skipped because only one metric value is available. Portfolio will not render. Using try() or tryCatch() does not resolve the issue. 
 ```
 
@@ -214,6 +209,8 @@ rf_tune_res <- tune_grid(
   resamples = apparent(model_data),
   grid = rf_grid
 )
+
+# autoplot(rf_tune_res)
 ```
 
 Autoplot() did not work, for the same reason listed above. 
@@ -247,6 +244,9 @@ rf_cv_res <- tune_grid(
   resamples = cv_folds,
   grid = rf_grid
 )
+
+autoplot(lasso_cv_res)
+autoplot(rf_cv_res)
 ```
 ```{r}
 # LASSO CV
