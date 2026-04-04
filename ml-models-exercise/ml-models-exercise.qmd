@@ -148,7 +148,7 @@ plot_obs_pred(rf_res, "Random Forest")
 
 # Tuning (without CV)
 
-```{r}
+```{r, error=TRUE}
 # LASSO grid
 lasso_grid <- tibble(
   penalty = 10^seq(-5, 2, length.out = 50)
@@ -170,7 +170,7 @@ lasso_tune_res <- tune_grid(
   grid = lasso_grid
 )
 
-autoplot(lasso_tune_res)
+# autoplot() skipped because only one metric value is available. Portfolio will not render. Using try() or tryCatch() does not resolve the issue. 
 ```
 
 Unfortunately, autoplot() will not run, as there is only one observation per metric presen and no meaningful plot can be created. Instead, I will use ggplot(). 
@@ -189,7 +189,7 @@ ggplot(lasso_metrics, aes(x = penalty, y = mean)) +
   theme_minimal()
 ```
 
-```{r}
+```{r, error=TRUE}
 # RF tuning
 rf_tune_mod <- rand_forest(
   mtry = tune(),
@@ -214,8 +214,6 @@ rf_tune_res <- tune_grid(
   resamples = apparent(model_data),
   grid = rf_grid
 )
-
-autoplot(rf_tune_res)
 ```
 
 Autoplot() did not work, for the same reason listed above. 
@@ -233,7 +231,7 @@ ggplot(rf_metrics, aes(x = mtry, y = min_n, fill = mean)) +
 ```
 
 # Tuning (with CV)
-```{r}
+```{r, error=TRUE}
 set.seed(1234)
 
 cv_folds <- vfold_cv(model_data, v = 5, repeats = 5)
@@ -244,15 +242,11 @@ lasso_cv_res <- tune_grid(
   grid = lasso_grid
 )
 
-autoplot(lasso_cv_res)
-
 rf_cv_res <- tune_grid(
   rf_tune_wf,
   resamples = cv_folds,
   grid = rf_grid
 )
-
-autoplot(rf_cv_res)
 ```
 ```{r}
 # LASSO CV
