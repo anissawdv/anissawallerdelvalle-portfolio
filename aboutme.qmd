@@ -4,7 +4,7 @@ title: "About Me"
 
 **Background and Training**
 
-My name is Anissa Waller Del Valle. I am Ph.D. student in the Department of Cellular Biology and member of the Center for Tropical and Emerging Global Diseases (CTEGD) here at the University of Georgia. I obtained a B.Sc. in Biological Sciences from Clemson University and was a member of the Eukaryotic Pathogens Innovation Center (EPIC).
+My name is Anissa Waller Del Valle. I am Ph.D. student in the Department of Cellular Biology and member of the Center for Tropical and Emerging Global Diseases (CTEGD) here at the University of Georgia. I obtained a B.Sc. in Biological Sciences from Clemson University and was a member of the Eukaryotic Pathogens Innovation Center (EPIC). 
 
 **Research Interests**
 

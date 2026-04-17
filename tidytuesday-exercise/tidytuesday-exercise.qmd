@@ -1,0 +1,314 @@
+---
+title: "Tidy Tuesday Exercise"
+format: html
+---
+
+The assignment is to partipate in this week's (April 13 - 19, 2026) Tidy Tuesday. The dataset is entitled **Bird Sightings at Sea** and consists of log bird entries of bird sightings at sea near New Zealand from 1969 to 1990. 
+
+**Question:** Are birds more likely to follow ships under certain environmental and ship conditions?  
+
+# Load and Clean Data
+
+```{r}
+# Load packages. 
+
+library(tidyverse)
+library(tidymodels)
+library(ggplot2)
+
+# Access the dataset by reading directly from Github. Code provided by Tidy Tuesdays / Jon Harmon. 
+
+beaufort_scale <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-04-14/beaufort_scale.csv')
+birds <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-04-14/birds.csv')
+sea_states <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-04-14/sea_states.csv')
+ships <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-04-14/ships.csv')
+
+# Show column names for each dataset
+colnames(beaufort_scale)
+colnames(birds)
+colnames(sea_states)
+colnames(ships)
+```
+```{r}
+# Merge bird observations with ship data
+data_full <- birds %>%
+  left_join(ships, by = "record_id")
+
+# Create binary outcome: whether birds are following the ship
+data_clean <- data_full %>%
+  mutate(
+    following_ship = ifelse(n_following_ship > 0, 1, 0),
+    following_ship = factor(following_ship),
+    wind_speed_class = factor(wind_speed_class),
+    sea_state_class = factor(sea_state_class),
+    season = factor(season)
+  ) %>%
+  select(following_ship, speed, wind_speed_class, sea_state_class, season) %>%
+  drop_na()
+```
+
+# Exploratory Data Analysis 
+
+```{r}
+# Plot influence of ship speed on following behavior 
+speed_summary <- data_clean %>%
+  mutate(
+    following_ship = as.numeric(as.character(following_ship)),
+    speed_bin = ntile(speed, 10)
+  ) %>%
+  group_by(speed_bin) %>%
+  summarise(
+    prop_follow = mean(following_ship, na.rm = TRUE),
+    n = n()
+  )
+
+ggplot(speed_summary, aes(x = speed_bin, y = prop_follow, group = 1)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(
+    x = "Ship Speed (deciles)",
+    y = "Proportion of Birds Following",
+    title = "Bird Following vs Ship Speed"
+  ) +
+  theme_minimal()
+
+# Plot influence of wind speed on following behavior 
+data_clean %>%
+  mutate(following_ship = as.numeric(as.character(following_ship))) %>%
+  group_by(wind_speed_class) %>%
+  summarise(prob_follow = mean(following_ship)) %>%
+  ggplot(aes(x = wind_speed_class, y = prob_follow, group = 1)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(
+    x = "Wind Speed Class",
+    y = "Proportion of Birds Following",
+    title = "Bird Following vs Wind Conditions"
+  )
+
+# Plot influence of sea state on following behavior. 
+data_clean %>%
+  mutate(following_ship = as.numeric(as.character(following_ship))) %>%
+  group_by(sea_state_class) %>%
+  summarise(prob_follow = mean(following_ship)) %>%
+  ggplot(aes(x = sea_state_class, y = prob_follow, group = 1)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(
+    x = "Sea State Class",
+    y = "Proportion of Birds Following",
+    title = "Bird Following vs Sea State"
+  )
+```
+
+```{r}
+# Load packages
+library(dplyr)
+library(tidyr)
+library(patchwork)
+
+# Prepare the data 
+df <- data_clean %>%
+  mutate(
+    following_ship_num = as.numeric(as.character(following_ship)),
+    # Re-level so '1' is the level of interest for the ROC curve
+    following_ship = factor(following_ship, levels = c("1", "0")) 
+  )
+
+# Plot ship speed 
+p1 <- ggplot(df, aes(x = speed, y = following_ship_num)) +
+  geom_smooth(
+    method = "glm",
+    method.args = list(family = "binomial"),
+    se = TRUE,
+    color = "royalblue",
+    fill = "royalblue",
+    alpha = 0.2
+  ) +
+  labs(
+    title = "Ship Speed vs. Bird Following",
+    x = "Speed (knots)",
+    y = "Probability of Following"
+  ) +
+  theme_minimal()
+
+# Plot environmental factors 
+cat_df <- df %>%
+  mutate(
+    wind_speed_class = as.character(wind_speed_class),
+    sea_state_class = as.character(sea_state_class)
+  ) %>%
+  pivot_longer(
+    cols = c(wind_speed_class, sea_state_class),
+    names_to = "variable",
+    values_to = "value"
+  ) %>%  # This was the missing pipe causing the error
+  mutate(
+    variable = recode(variable,
+      wind_speed_class = "Wind Speed (Beaufort)",
+      sea_state_class = "Sea State"
+    ),
+    value = as.factor(value)
+  ) %>%
+  group_by(variable, value) %>%
+  summarise(
+    prob_follow = mean(following_ship_num, na.rm = TRUE),
+    se = sd(following_ship_num, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  )
+
+p2 <- ggplot(cat_df, aes(x = value, y = prob_follow)) +
+  geom_point(size = 3, color = "darkorange") +
+  geom_errorbar(aes(ymin = prob_follow - se, ymax = prob_follow + se), width = 0.2) +
+  facet_wrap(~variable, scales = "free_x") +
+  labs(
+    title = "Environmental Influence",
+    x = "Condition Class",
+    y = "Mean Probability"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Combine 
+(p1 / p2) + plot_annotation(title = "Factors Influencing Seabird Ship-Following Behavior")
+```
+
+# Modeling 
+
+```{r}
+# Split into training and testing sets
+set.seed(123)
+
+split <- initial_split(data_clean, prop = 0.8, strata = following_ship)
+train <- training(split)
+test  <- testing(split)
+
+# Preprocessing recipe
+rec <- recipe(following_ship ~ speed + wind_speed_class + sea_state_class + season, data = train) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors()) %>%   # Removes zero-variance predictors created during resampling
+  step_normalize(all_numeric_predictors())
+
+# Cross-validation setup
+set.seed(123)
+folds <- vfold_cv(train, v = 5)
+```
+```{r} 
+# Logistic regression (baseline model)
+log_model <- logistic_reg() %>%
+  set_engine("glm")
+
+wf_log <- workflow() %>%
+  add_model(log_model) %>%
+  add_recipe(rec)
+
+fit_log <- fit_resamples(
+  wf_log,
+  resamples = folds,
+  metrics = metric_set(accuracy, roc_auc)
+)
+
+# Random forest model
+rf_model <- rand_forest() %>%
+  set_engine("ranger") %>%
+  set_mode("classification")
+
+wf_rf <- workflow() %>%
+  add_model(rf_model) %>%
+  add_recipe(rec)
+
+fit_rf <- fit_resamples(
+  wf_rf,
+  resamples = folds,
+  metrics = metric_set(accuracy, roc_auc)
+)
+
+# Boosted tree model
+boost_model <- boost_tree() %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+wf_boost <- workflow() %>%
+  add_model(boost_model) %>%
+  add_recipe(rec)
+
+fit_boost <- fit_resamples(
+  wf_boost,
+  resamples = folds,
+  metrics = metric_set(accuracy, roc_auc)
+)
+```
+```{r} 
+# Compare model performance. 
+bind_rows(
+  collect_metrics(fit_log) %>% mutate(model = "logistic"),
+  collect_metrics(fit_rf) %>% mutate(model = "random_forest"),
+  collect_metrics(fit_boost) %>% mutate(model = "xgboost")
+)
+```
+
+```{r}
+library(yardstick) 
+
+# refit random forest with importance enabled
+rf_model <- rand_forest() %>%
+  set_engine("ranger", importance = "impurity") %>%
+  set_mode("classification")
+
+wf_rf <- workflow() %>%
+  add_model(rf_model) %>%
+  add_recipe(rec)
+
+final_fit <- fit(wf_rf, data = train)
+
+# predictions
+preds <- predict(final_fit, test, type = "prob") %>%
+  bind_cols(predict(final_fit, test)) %>%
+  bind_cols(test)
+
+# confusion matrix
+conf_mat(preds, truth = following_ship, estimate = .pred_class)
+
+# ROC curve
+roc_df <- preds %>%
+  roc_curve(truth = following_ship, .pred_1, event_level = "second")
+
+ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line(linewidth = 1.2) +
+  geom_abline(linetype = "dashed") +
+  labs(
+    title = "ROC Curve (Random Forest)",
+    x = "False Positive Rate",
+    y = "True Positive Rate"
+  ) +
+  theme_minimal()
+
+# metrics
+metrics(preds, truth = following_ship, estimate = .pred_class)
+roc_auc(preds, truth = following_ship, .pred_1)
+
+# variable importance
+rf_fit <- final_fit %>%
+  extract_fit_parsnip()
+
+importance_df <- tibble(
+  variable = names(rf_fit$fit$variable.importance),
+  importance = rf_fit$fit$variable.importance
+)
+
+ggplot(importance_df, aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Variable Importance (Random Forest)",
+    x = NULL,
+    y = "Importance"
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+# Discussion 
+
+A logistic model was used as a baseline, as it provides information on how predictors (e.g., ship speed and environmental conditions) influence the probability of birds following ships. As the logistic model is linear (and may not capture more complex patterns in the data), a random forest model and boosted tree model were used. The random forest model was included because it can model nonlinear relationships and interactions between variables, while the boosted tree model was used to incorporate some ML models and help improve prediction performance.A comparison of all three models indicates that the RF model performed best, suggesting that nonlinear relationships and interactions between variables (e.g., ship speed, wind conditions, and sea state) are important factors that influence bird-following behavior.  
+
+The exploratory analyses show that ship speed has a strong positive association with following probability, with an initial increase that levels off at higher speeds. Sea state also shows a clear positive relationship with following behavior, suggesting that birds are more frequently observed following ships under higher sea conditions. Wind speed shows a weaker and more variable pattern, with no consistent monotonic relationship across classes; the drop in the highest wind category is likely driven by limited observations in that bin. However, the moderate performance of all models indicates that additional unmeasured factors (e.g., species-specific behavior) likely play an important role. 
